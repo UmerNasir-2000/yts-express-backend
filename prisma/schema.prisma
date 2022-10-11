@@ -1,0 +1,234 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Cinematic {
+  id                Int                          @id @default(autoincrement())
+  title             String                       @db.VarChar(255)
+  synopsis          String                       @db.Text
+  tagline           String                       @db.VarChar(255)
+  releasedYear      Int                          @map("released_year") @db.Year
+  poster            String                       @map("poster_path") @db.Text
+  backdrop_path     String?                      @db.Text
+  code              String                       @map("imdb_code") @db.VarChar(15)
+  trailerlink       String                       @db.Text @map("trailer_link")
+  subtitleLink      String?                      @db.Text @map("subtitle_link")
+  duration          Int
+  film_industry     cinematics_film_industry     @default(hollywood)
+  type              cinematics_type              @default(movie)
+  status            cinematics_status            @default(upcoming)
+  pgRating          cinematics_pg_rating         @map("pg_rating")
+  originalLanguage  cinematics_original_language @default(english) @map("original_language")
+  budget            Decimal                      @db.Decimal(15, 2)
+  revenue           Decimal                      @db.Decimal(15, 2)
+  directorId        Int                          @map("director_id")
+  created_at        DateTime?                    @default(now()) @db.DateTime(0)
+
+  @@unique([title, releasedYear], map: "title_year_index")
+  @@map("cinematics")
+}
+
+model artists {
+  id          Int                @id @default(autoincrement())
+  first_name  String             @db.VarChar(50)
+  last_name   String?            @db.VarChar(50)
+  gender      artists_gender     @default(not_specified)
+  nationality String?            @db.VarChar(50)
+  known_for   artists_known_for? @default(actor)
+  birth_year  Int                @db.Year
+  bio         String?            @db.Text
+  image_link  String             @db.Text
+}
+
+model cinematics_artists_mapping {
+  id             Int      @id @default(autoincrement())
+  character_name String   @db.VarChar(50)
+  is_leading     Boolean? @default(true)
+  cinematic_id   Int
+  artist_id      Int
+
+  @@unique([cinematic_id, artist_id, character_name], map: "cinematic_artist_character_index")
+}
+
+model cinematics_genres_mapping {
+  cinematic_id Int
+  genre_id     Int
+
+  @@id([cinematic_id, genre_id])
+}
+
+model cinematics_images {
+  id           Int    @id @default(autoincrement())
+  image_path   String @db.Text
+  cinematic_id Int
+}
+
+model download_details {
+  id           Int       @id @default(autoincrement())
+  torrent_id   Int
+  cinematic_id Int
+  user_id      Int?
+  created_at   DateTime? @default(now()) @db.DateTime(0)
+}
+
+model genres {
+  id   Int         @id @default(autoincrement())
+  name genres_name
+}
+
+model public_logs {
+  id               Int                        @id @default(autoincrement())
+  ip_address       String                     @db.Char(15)
+  request_method   public_logs_request_method
+  request_endpoint String                     @db.VarChar(50)
+}
+
+model requests {
+  id                    Int              @id @default(autoincrement())
+  cinematic_title       String           @db.VarChar(255)
+  cinematic_description String?          @db.Text
+  status                requests_status? @default(initiate)
+  user_id               Int
+  created_at            DateTime?        @default(now()) @db.DateTime(0)
+}
+
+model torrents {
+  id           Int              @id @default(autoincrement())
+  quality      torrents_quality
+  path         String           @db.Text
+  size         BigInt
+  seeds        Int?
+  peers        Int?
+  type         torrents_type
+  cinematic_id Int
+  created_at   DateTime?        @default(now()) @db.DateTime(0)
+}
+
+model users {
+  id          Int          @id @default(autoincrement())
+  first_name  String       @db.VarChar(50)
+  last_name   String?      @db.VarChar(50)
+  email       String       @unique(map: "email") @db.VarChar(255)
+  password    String       @db.Text
+  gender      users_gender @default(not_specified)
+  nationality String?      @db.VarChar(50)
+  type        users_type?  @default(user)
+  status      users_status @default(register)
+}
+
+model users_favourites {
+  id          Int      @id @default(autoincrement())
+  is_notified Boolean? @default(false)
+  user_id     Int
+}
+
+enum cinematics_film_industry {
+  hollywood
+  bollywood
+  lollywood
+  tamil_nadu  @map("tamil-nadu")
+  korean
+}
+
+enum cinematics_type {
+  movie
+  season
+}
+
+enum cinematics_status {
+  upcoming
+  released
+  deleted
+  disabled
+}
+
+enum cinematics_pg_rating {
+  PG_8   @map("PG-8")
+  PG_12  @map("PG-12")
+  PG_14  @map("PG-14")
+  PG_16  @map("PG-16")
+  PG_18  @map("PG-18")
+}
+
+enum cinematics_original_language {
+  english
+  hindi
+  urdu
+  tamil
+  korean
+}
+
+enum artists_gender {
+  male
+  female
+  not_specified  @map("not-specified")
+}
+
+enum artists_known_for {
+  actor
+  director
+  actor_director  @map("actor-director")
+}
+
+enum genres_name {
+  action
+  crime
+  adventure
+  fantasy
+  sci_fi     @map("sci-fi")
+  thriller
+  horror
+  romantic
+  drama
+  animation
+}
+
+enum public_logs_request_method {
+  get
+  post
+  put
+  patch
+  delete
+}
+
+enum requests_status {
+  initiate
+  in_process  @map("in-process")
+  fulfill
+}
+
+enum torrents_quality {
+  P480 @map("480")
+  P720 @map("720")
+  P1080 @map("1080")
+  P2160 @map("2160")
+  P3840 @map("3840")
+}
+
+enum torrents_type {
+  cam
+  web
+  bluray
+}
+
+enum users_gender {
+  male
+  female
+  not_specified  @map("not-specified")
+}
+
+enum users_type {
+  admin
+  user
+}
+
+enum users_status {
+  enable
+  disable
+  register
+}
