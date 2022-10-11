@@ -1,0 +1,28 @@
+{
+    "pages": 188,
+    "hasNext": true,
+    "hasPrevious": true,
+    "movies": [
+        {
+            "id": 1,
+            "poster": "https://yts-",
+            "title": "Avengers",
+            "releasedYear": 2012,
+            "slug": "avengers-2012",
+            "ratings": [
+                {
+                    "type": "imdb",
+                    "score": 8.0,
+                    "icon": "https"
+                }
+            ],
+            "genres": [
+                "Horror",
+                "Crime"
+            ],
+            "resolutions": [
+                "720p"
+            ]
+        }
+    ]
+}
